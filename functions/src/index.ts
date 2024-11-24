@@ -8,7 +8,7 @@
  */
 
 // import {onRequest} from "firebase-functions/v2/https";
-// import * as logger from "firebase-functions/logger";
+import * as logger from "firebase-functions/logger";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -30,8 +30,9 @@ app.use(cors({ origin: true })); // Allow cross-origin requests
 // app.use(cors({ origin: ['http://localhost:3000', 'https://nextjs-dashboard-eight-pi-25.vercel.app'] }));
 app.use(express.json());
 
-// Example API route
+// Example API route 
 app.get("/hello", (req, res) => {
+    logger.log("\n\n ========    This is the local logger    =======\n\n")
     res.status(200).json({ message: "Hello from Firebase Functions!" });
 });
 
