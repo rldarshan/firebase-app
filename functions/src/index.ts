@@ -26,13 +26,13 @@ import * as cors from "cors";
 const app = express();
 
 // Middleware
-// app.use(cors({ origin: true })); // Allow cross-origin requests
-app.use(cors({ origin: ['http://localhost:3000', 'https://nextjs-dashboard-eight-pi-25.vercel.app'] }));
+app.use(cors({ origin: true })); // Allow cross-origin requests
+// app.use(cors({ origin: ['http://localhost:3000', 'https://nextjs-dashboard-eight-pi-25.vercel.app'] }));
 app.use(express.json());
 
 // Example API route
-app.get("/api/hello", (req, res) => {
-    res.json({ message: "Hello from Firebase Functions!" });
+app.get("/hello", (req, res) => {
+    res.status(200).json({ message: "Hello from Firebase Functions!" });
 });
 
 // Export the Express app as a Firebase Function
