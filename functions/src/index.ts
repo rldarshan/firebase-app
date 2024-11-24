@@ -48,25 +48,18 @@ app.get("/hello", (req, res) => {
   res.status(200).json({ message: "Hello from Firebase Functions!" });
 });
 
-app.get("/add_user", (req, res) => {
-  logger.log(
-    "\n\n ========    This is the /add_user api logger    =======\n\n"
-  );
-  res.status(200).json({ message: "This is 'add_user' Firebase Functions!" });
-});
-
 // CREATE: Add a new user
 app.post("/add_user_data", async (req, res) => {
   try {
     const data = req.body;
-    const newDoc = await collectionRef.add(data);
-    res
-      .status(200)
-      .json({ id: newDoc.id, message: "User added successfully." });
+    await collectionRef.doc(data.id).set(data);
+    logger.log("\n\n ========    This is the '/add_user_data' api logger    =======\n\n", data);
+    res.status(200).json({ message: "User added successfully." });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
-    } else {
+      logger.log("\n\n ========    Error in '/add_user_data' api logger    =======\n\n",error.message);
+  } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
@@ -77,11 +70,13 @@ app.get("/get_all_users", async (req, res) => {
   try {
     const snapshot = await collectionRef.get();
     const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    logger.log("\n\n ========    This is the '/get_all_users' api logger    =======\n\n");
     res.status(200).json(items);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
-    } else {
+      logger.log("\n\n ========    Error in '/get_all_users' api logger    =======\n\n",error.message);
+  } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
@@ -95,9 +90,11 @@ app.get("/get_user/:id", async (req, res) => {
     if (!doc.exists) {
       return res.status(404).json({ error: "user not found." });
     }
+    logger.log(`\n\n ========    This is the '/get_user/${docId}' api logger    =======\n\n`, { id: doc.id, ...doc.data() });
     return res.status(200).json({ id: doc.id, ...doc.data() });
   } catch (error) {
     if (error instanceof Error) {
+        logger.log("\n\n ========    Error in '/get_user' api logger    =======\n\n",error.message);
         return res.status(500).json({ error: error.message });
     } else {
         return res.status(500).json({ error: "An unexpected error occurred" });
@@ -111,10 +108,12 @@ app.put("/update_user_data/:id", async (req, res) => {
     const docId = req.params.id;
     const data = req.body;
     await collectionRef.doc(docId).update(data);
+    logger.log(`\n\n ========     '/update_user_data/${docId}' api logger    =======\n\n`, data);
     res.status(200).json({ message: "user updated successfully." });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
+      logger.log("\n\n ========    Error in '/update_user_data' api logger    =======\n\n",error.message);
     } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
@@ -126,10 +125,12 @@ app.delete("/delete_user_data/:id", async (req, res) => {
   try {
     const docId = req.params.id;
     await collectionRef.doc(docId).delete();
+    logger.log(`\n\n ========     '/delete_user_data/${docId}' api logger    =======\n\n`);
     res.status(200).json({ message: "user deleted successfully." });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
+      logger.log("\n\n ========    Error in '/delete_user_data' api logger    =======\n\n",error.message);
     } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
