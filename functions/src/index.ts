@@ -9,31 +9,33 @@
 
 // import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
-
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
-
 import * as functions from "firebase-functions";
 import * as express from "express";
-import * as cors from "cors";
+// import * as cors from "cors";
 
 const app = express();
 
 // Middleware
 // app.use(cors({ origin: true })); // Allow cross-origin requests
-app.use(cors({ origin: ['http://localhost:3000', 'https://nextjs-dashboard-eight-pi-25.vercel.app'] }));
+// app.use(cors({ origin: ['http://localhost:3000', 'https://nextjs-dashboard-eight-pi-25.vercel.app'] }));  //  CORS filtering not working this way
+
+const origin = ['http://localhost:3000', 'https://nextjs-dashboard-eight-pi-25.vercel.app']
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  next();
+});
 app.use(express.json());
 
-// Example API route 
+// Example API route
 app.get("/hello", (req, res) => {
-    logger.log("\n\n ========    This is the /hello api logger    =======\n\n")
-    res.status(200).json({ message: "Hello from Firebase Functions!" });
+  logger.log("\n\n ========    This is the /hello api logger    =======\n\n");
+  res.status(200).json({ message: "Hello from Firebase Functions!" });
 });
 
 // Export the Express app as a Firebase Function
