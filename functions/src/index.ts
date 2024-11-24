@@ -19,11 +19,28 @@ const app = express();
 // app.use(cors({ origin: true })); // Allow cross-origin requests
 // app.use(cors({ origin: ['http://localhost:3000', 'https://nextjs-dashboard-eight-pi-25.vercel.app'] }));  //  CORS filtering not working this way
 
-const origin = ['http://localhost:3000', 'https://nextjs-dashboard-eight-pi-25.vercel.app']
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://nextjs-dashboard-eight-pi-25.vercel.app",
+];
 
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  const origin = req.headers.origin as string;
+  
+  if (!allowedOrigins.includes(origin)) {
+    console.log("===== blocked origin =====", req.headers.origin);
+    
+    res.status(403).send("CORS policy: Access from this origin is blocked.");
+    return;
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,HEAD,OPTIONS,POST,PUT,DELETE"
+  );
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
