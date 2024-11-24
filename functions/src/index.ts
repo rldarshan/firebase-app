@@ -52,7 +52,7 @@ app.get("/hello", (req, res) => {
 app.post("/add_user_data", async (req, res) => {
   try {
     const data = req.body;
-    await collectionRef.doc(data.id).set(data);
+    await collectionRef.add(data);
     logger.log("\n\n ========    This is the '/add_user_data' api logger    =======\n\n", data);
     res.status(200).json({ message: "User added successfully." });
   } catch (error) {
@@ -70,7 +70,7 @@ app.get("/get_all_users", async (req, res) => {
   try {
     const snapshot = await collectionRef.get();
     const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    logger.log("\n\n ========    This is the '/get_all_users' api logger    =======\n\n");
+    logger.log("\n\n ========    This is the '/get_all_users' api logger    =======\n\n", items);
     res.status(200).json(items);
   } catch (error) {
     if (error instanceof Error) {
