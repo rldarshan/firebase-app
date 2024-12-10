@@ -6,7 +6,13 @@
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "moduleResolution": "node",
+    "target": "es6", // Update to ES2015 or higher
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": "./", 
+    "paths": { "firebase-admin": ["node_modules/firebase-admin/lib/index"] }
   },
   "compileOnSave": true,
   "include": [

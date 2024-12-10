@@ -2,7 +2,7 @@
 import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import * as express from "express";
+import express from "express";
 import { countrt_list } from "./country_list";
 
 const app = express();
@@ -13,8 +13,9 @@ const allowedOrigins = [
 
 admin.initializeApp();
 const db = admin.firestore();
+const collectionRef = db.collection("user_data");
 
-app.use((req, res, next) => {
+app.use((req:any, res:any, next:any) => {
   const origin = req.headers.origin as string;
 
   if (!allowedOrigins.includes(origin)) {
@@ -41,48 +42,47 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
-const collectionRef = db.collection("user_data");
-
 // Example API route
-app.get("/hello", (req, res) => {
+app.get("/hello", (req:any, res:any) => {
   logger.log("\n\n ========    This is the /hello api logger    =======\n\n");
   res.status(200).json({ message: "Hello from Firebase Functions!" });
 });
 
 // CREATE: Add a new user
-app.post("/add_user_data", async (req, res) => {
+app.post("/add_user_data", async (req:any, res:any) => {
   try {
     const data = req.body;
-    await collectionRef.add(data);
+    console.log("\n\n",data,"\n\n")
+    await collectionRef.doc(String(data['id'])).set(data);
     logger.log("\n\n ========    This is the '/add_user_data' api logger    =======\n\n", data);
     res.status(200).json({ message: "User added successfully." });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
-      logger.log("\n\n ========    Error in '/add_user_data' api logger    =======\n\n",error.message);
-  } else {
+      logger.log("\n\n ========    Error in '/add_user_data' api logger    =======\n\n", error.message);
+    } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
 });
 
 // READ: Get all users
-app.get("/get_country_list", async (req, res) => {
+app.get("/get_country_list", async (req:any, res:any) => {
   try {
     logger.log("\n\n ========    This is the '/get_country_list' api logger    =======\n\n");
     res.status(200).json(countrt_list);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
-      logger.log("\n\n ========    Error in '/get_country_list' api logger    =======\n\n",error.message);
-  } else {
+      logger.log("\n\n ========    Error in '/get_country_list' api logger    =======\n\n", error.message);
+    } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
 });
 
 // READ: Get all users
-app.get("/get_all_users", async (req, res) => {
+app.get("/get_all_users", async (req:any, res:any) => {
   try {
     const snapshot = await collectionRef.get();
     const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -91,15 +91,15 @@ app.get("/get_all_users", async (req, res) => {
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
-      logger.log("\n\n ========    Error in '/get_all_users' api logger    =======\n\n",error.message);
-  } else {
+      logger.log("\n\n ========    Error in '/get_all_users' api logger    =======\n\n", error.message);
+    } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
 });
 
 // READ: Get a single user by ID
-app.get("/get_user/:id", async (req, res) => {
+app.get("/get_user/:id", async (req:any, res:any) => {
   try {
     const docId = req.params.id;
     const doc = await collectionRef.doc(docId).get();
@@ -110,16 +110,16 @@ app.get("/get_user/:id", async (req, res) => {
     return res.status(200).json({ id: doc.id, ...doc.data() });
   } catch (error) {
     if (error instanceof Error) {
-        logger.log("\n\n ========    Error in '/get_user' api logger    =======\n\n",error.message);
-        return res.status(500).json({ error: error.message });
+      logger.log("\n\n ========    Error in '/get_user' api logger    =======\n\n", error.message);
+      return res.status(500).json({ error: error.message });
     } else {
-        return res.status(500).json({ error: "An unexpected error occurred" });
+      return res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
 });
 
 // UPDATE: Update a user by ID
-app.put("/update_user_data/:id", async (req, res) => {
+app.put("/update_user_data/:id", async (req:any, res:any) => {
   try {
     const docId = req.params.id;
     const data = req.body;
@@ -129,24 +129,40 @@ app.put("/update_user_data/:id", async (req, res) => {
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
-      logger.log("\n\n ========    Error in '/update_user_data' api logger    =======\n\n",error.message);
+      logger.log("\n\n ========    Error in '/update_user_data' api logger    =======\n\n", error.message);
     } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
 });
 
-// DELETE: Delete a user by ID
-app.delete("/delete_user_data/:id", async (req, res) => {
+const deleteMultipleRecords = async (ids:any) => {
+  const batch = db.batch();
+  ids.forEach((id:any) => {
+    console.log(id)
+    const docRef = collectionRef.doc(id);
+    batch.delete(docRef);
+  });
+
   try {
-    const docId = req.params.id;
-    await collectionRef.doc(docId).delete();
+    await batch.commit();
+    console.log("Successfully deleted records");
+  } catch (error) {
+    console.error("Error deleting records: ", error);
+  }
+};
+
+// DELETE: Delete a user by ID
+app.delete("/delete_user_data/:id", async (req:any, res:any) => {
+  try {
+    const docId = req.params.id.split(',');
+    await deleteMultipleRecords(docId);
     logger.log(`\n\n ========     '/delete_user_data/${docId}' api logger    =======\n\n`);
     res.status(200).json({ message: "user deleted successfully." });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
-      logger.log("\n\n ========    Error in '/delete_user_data' api logger    =======\n\n",error.message);
+      logger.log("\n\n ========    Error in '/delete_user_data' api logger    =======\n\n", error.message);
     } else {
       res.status(500).json({ error: "An unexpected error occurred" });
     }
