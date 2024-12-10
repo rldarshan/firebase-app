@@ -139,8 +139,8 @@ app.put("/update_user_data/:id", async (req:any, res:any) => {
 const deleteMultipleRecords = async (ids:any) => {
   const batch = db.batch();
   ids.forEach((id:any) => {
-    console.log(id)
-    const docRef = collectionRef.doc(id);
+    console.log("\n\n =======   Document to delete   =====",id)
+    const docRef = collectionRef.doc(String(id));
     batch.delete(docRef);
   });
 
